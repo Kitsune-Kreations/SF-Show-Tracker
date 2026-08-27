@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SF Show Tracker</title>
+<style>
+  :root {
+    --bg: #f6f1ea;
+    --bg-glow: rgba(20, 18, 16, 0.06);
+    --surface: #ffffff;
+    --surface-notch: #f6f1ea;
+    --ink: #090907;
+    --ink-soft: #2c2921;
+    --ink-faint: #8c8375;
+    --hairline: #d3cec5;
+    --accent: #141210;
+    --accent-ink: #f6f1ea;
+    --accent-2: #2c2921;
+    --accent-2-soft: #e7e2d8;
+    --accent-soft: #d3cec5;
+    --status-onsale: #4c6b45;
+    --status-onsale-bg: #e4e9dd;
+    --status-soldout: #a2432f;
+    --status-soldout-bg: #f1e0d6;
+    --status-presale: #8a6a1f;
+    --status-presale-bg: #ece2cd;
+    --focus: #141210;
+    --shadow: 35 20% 6%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #090907;
+      --bg-glow: rgba(246, 241, 234, 0.08);
+      --surface: #141210;
+      --surface-notch: #090907;
+      --ink: #f6f1ea;
+      --ink-soft: #d3cec5;
+      --ink-faint: #756e60;
+      --hairline: #2c2921;
+      --accent: #f6f1ea;
+      --accent-ink: #141210;
+      --accent-2: #d3cec5;
+      --accent-2-soft: #211e18;
+      --accent-soft: #2c2921;
+      --status-onsale: #9bc08e;
+      --status-onsale-bg: #202b1c;
+      --status-soldout: #e2937a;
+      --status-soldout-bg: #2e1e17;
+      --status-presale: #dcb85f;
+      --status-presale-bg: #2c2410;
+      --focus: #f6f1ea;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #090907;
+    --bg-glow: rgba(246, 241, 234, 0.08);
+    --surface: #141210;
+    --surface-notch: #090907;
+    --ink: #f6f1ea;
+    --ink-soft: #d3cec5;
+    --ink-faint: #756e60;
+    --hairline: #2c2921;
+    --accent: #f6f1ea;
+    --accent-ink: #141210;
+    --accent-2: #d3cec5;
+    --accent-2-soft: #211e18;
+    --accent-soft: #2c2921;
+    --status-onsale: #9bc08e;
+    --status-onsale-bg: #202b1c;
+    --status-soldout: #e2937a;
+    --status-soldout-bg: #2e1e17;
+    --status-presale: #dcb85f;
+    --status-presale-bg: #2c2410;
+    --focus: #f6f1ea;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Manrope", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3.5rem;
+  }
+
+  /* ---------- Hero ---------- */
+
+  .hero {
+    position: relative;
+    padding: 3.25rem 1.5rem 2.75rem;
+    margin: 0 -1.5rem 2.25rem;
+    overflow: hidden;
+    background:
+      radial-gradient(60% 90% at 18% 0%, var(--bg-glow), transparent 70%),
+      radial-gradient(45% 70% at 85% 10%, var(--bg-glow), transparent 70%);
+  }
+
+  .hero-inner { max-width: 1080px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    font-weight: 500;
+  }
+
+  h1 {
+    font-family: "Unbounded", "Manrope", sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.4rem, 6.4vw, 4.2rem);
+    letter-spacing: -0.01em;
+    margin: 0.35rem 0 0.75rem;
+    text-wrap: balance;
+    line-height: 0.98;
+  }
+
+  h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .subline {
+    color: var(--ink-soft);
+    font-size: 1rem;
+    max-width: 56ch;
+    line-height: 1.55;
+    margin: 0 0 1.5rem;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+  }
+
+  .meta-chip {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.76rem;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .meta-chip strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- Controls ---------- */
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .venue-pill {
+    font-family: "Manrope", sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .venue-pill:hover { border-color: var(--accent); color: var(--ink); transform: translateY(-1px); }
+
+  .venue-pill[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .venue-pill:focus-visible,
+  a:focus-visible,
+  .show-card:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Show groups & cards ---------- */
+
+  .month-group { margin-bottom: 2.25rem; }
+
+  .month-label {
+    font-family: "Unbounded", sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-bottom: 0.6rem;
+    margin-bottom: 1.1rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .show-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .show-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4.6rem 1fr;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: rise 0.5s ease forwards;
+    animation-delay: calc(var(--i, 0) * 45ms);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+
+  .show-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+    box-shadow: 0 14px 30px -18px hsl(var(--shadow) / 0.55);
+  }
+
+  @keyframes rise {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stub {
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.9rem 0.4rem;
+    text-align: center;
+    border-right: 2px dashed var(--surface-notch);
+  }
+
+  .stub::before,
+  .stub::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--surface-notch);
+    left: 4.6rem;
+    transform: translateX(-50%);
+  }
+
+  .stub::before { top: -8px; }
+  .stub::after { bottom: -8px; }
+
+  .stub-dow {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  .stub-day {
+    font-family: "Unbounded", sans-serif;
+    font-weight: 800;
+    font-size: 1.7rem;
+    line-height: 1.1;
+  }
+
+  .stub-mon {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .card-body {
+    padding: 0.95rem 1rem 0.95rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .artist {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+  }
+
+  .genre-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: var(--accent-2-soft);
+    color: var(--accent-2);
+  }
+
+  .venue-name {
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+  }
+
+  .note {
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  .status {
+    align-self: flex-start;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.55rem;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .status.onsale { color: var(--status-onsale); background: var(--status-onsale-bg); }
+  .status.soldout { color: var(--status-soldout); background: var(--status-soldout-bg); }
+  .status.presale { color: var(--status-presale); background: var(--status-presale-bg); }
+
+  .show-card[hidden] { display: none; }
+
+  .empty-state {
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 0.9rem;
+    padding: 3rem 0;
+    display: none;
+  }
+
+  footer.page {
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--hairline);
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    line-height: 1.6;
+  }
+
+  footer.page a { color: var(--ink-soft); }
+
+  @media (max-width: 420px) {
+    .show-card { grid-template-columns: 3.8rem 1fr; }
+    .stub::before, .stub::after { left: 3.8rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .show-card { animation: none; opacity: 1; transform: none; }
+  }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+
+</head>
+<body>
+<div class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">SF Bay Area &middot; Live Music</span>
+    <h1>What&rsquo;s on the <em>marquee</em>.</h1>
+    <p class="subline">Venue, artist, and genre for every show landing two weeks to three months out, repulled from each venue&rsquo;s listings every week.</p>
+    <div class="meta-row">
+      <span class="meta-chip">Updated <strong>Aug 26, 2026</strong></span>
+      <span class="meta-chip">Window <strong>Sep 9&ndash;Nov 26</strong></span>
+      <span class="meta-chip">Venues <strong>8</strong></span>
+      <span class="meta-chip">Shows <strong>234</strong></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="controls" role="group" aria-label="Filter shows">
+    <button class="venue-pill" type="button" data-venue="all" aria-pressed="true">All venues</button>
+    <button class="venue-pill" type="button" data-venue="Bill Graham Civic Auditorium" aria-pressed="false">Bill Graham Civic</button>
+    <button class="venue-pill" type="button" data-venue="The Regency Ballroom" aria-pressed="false">Regency Ballroom</button>
+    <button class="venue-pill" type="button" data-venue="1015 Folsom" aria-pressed="false">1015 Folsom</button>
+    <button class="venue-pill" type="button" data-venue="The Warfield" aria-pressed="false">The Warfield</button>
+    <button class="venue-pill" type="button" data-venue="August Hall" aria-pressed="false">August Hall</button>
+    <button class="venue-pill" type="button" data-venue="The Independent SF" aria-pressed="false">The Independent</button>
+    <button class="venue-pill" type="button" data-venue="The Fillmore" aria-pressed="false">The Fillmore</button>
+    <button class="venue-pill" type="button" data-venue="The Midway SF" aria-pressed="false">The Midway</button>
+  </div>
+
+  <div id="listings"></div>
+  <p class="empty-state" id="emptyState">No shows match this filter.</p>
+
+  <footer class="page">
+    Sources: Bill Graham Civic, The Regency Ballroom (via Bandsintown), 1015 Folsom, The Warfield, August Hall, The Independent (via Bandsintown), The Fillmore (via Live Nation), and The Midway (via Bandsintown).
+    Genre is inferred, not published by most venues &mdash; treat it as a helpful guess. Status reflects the venue site at time of the last weekly pull.
+  </footer>
+</div>
+
+<script>
+  const shows = [
+    { date: "2026-09-11", venue: "The Regency Ballroom", artist: "Altin Gün", genre: "Psychedelic / Anatolian Rock", note: "", status: "onsale" },
+    { date: "2026-09-12", venue: "The Regency Ballroom", artist: "Moms Feelin’ Themselves (DJ Samala, DJ Mama K)", genre: "Dance Party / 90s Throwbacks", note: "", status: "onsale" },
+    { date: "2026-09-15", venue: "The Regency Ballroom", artist: "Starbomb feat. DJ Commander Meouch", genre: "Comedy Hip-Hop", note: "", status: "onsale" },
+    { date: "2026-09-18", venue: "The Regency Ballroom", artist: "Citizen", genre: "Emo / Post-Hardcore", note: "", status: "onsale" },
+    { date: "2026-09-19", venue: "Bill Graham Civic Auditorium", artist: "Steve Aoki, FARUKKO, Riot Ten, HIGHSOCIETY", genre: "Electronic / EDM", note: "Dim Mak 30 Tour", status: "onsale" },
+    { date: "2026-09-21", venue: "The Regency Ballroom", artist: "Uncle Acid & the Deadbeats", genre: "Doom / Psychedelic Rock", note: "", status: "onsale" },
+    { date: "2026-09-22", venue: "Bill Graham Civic Auditorium", artist: "Jay Park with LNGSHOT", genre: "R&B / Hip-Hop", note: "Serenades & Body Rolls", status: "onsale" },
+    { date: "2026-09-23", venue: "Bill Graham Civic Auditorium", artist: "Ken Carson, xaviersobased, prettifun, DJ Moon", genre: "Rage / Hip-Hop", note: "Xperimenting Tour", status: "onsale" },
+    { date: "2026-09-24", venue: "Bill Graham Civic Auditorium", artist: "Jack White", genre: "Rock", note: "Live 2026", status: "onsale" },
+    { date: "2026-09-24", venue: "The Regency Ballroom", artist: "Soulwax", genre: "Electronic / Dance-Rock", note: "", status: "onsale" },
+    { date: "2026-10-02", venue: "Bill Graham Civic Auditorium", artist: "Madeon", genre: "Electronic / Dance-Pop", note: "Victory Live", status: "onsale" },
+    { date: "2026-10-07", venue: "Bill Graham Civic Auditorium", artist: "The Neighbourhood, After Noise Dept.", genre: "Alternative / Indie Rock", note: "The Wourld Tour", status: "soldout" },
+    { date: "2026-10-09", venue: "Bill Graham Civic Auditorium", artist: "Holy Priest", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-10", venue: "Bill Graham Civic Auditorium", artist: "Bonnie Raitt, Jon Cleary & The Absolute Monster Gentlemen", genre: "Blues / Roots Rock", note: "Live 2026 Tour", status: "onsale" },
+    { date: "2026-10-15", venue: "Bill Graham Civic Auditorium", artist: "Rawayana", genre: "Latin / Reggae Fusion", note: "Dónde es el After? World Tour", status: "onsale" },
+    { date: "2026-10-16", venue: "Bill Graham Civic Auditorium", artist: "Sara Bareilles", genre: "Pop / Singer-Songwriter", note: "The Good Grief Tour", status: "soldout" },
+    { date: "2026-10-17", venue: "Bill Graham Civic Auditorium", artist: "Sara Bareilles", genre: "Pop / Singer-Songwriter", note: "The Good Grief Tour (2nd show)", status: "onsale" },
+    { date: "2026-10-22", venue: "Bill Graham Civic Auditorium", artist: "Monsta X", genre: "K-Pop", note: "2026 World Tour [The X: Nexus]", status: "onsale" },
+    { date: "2026-10-24", venue: "Bill Graham Civic Auditorium", artist: "Dermot Kennedy, Jonah Kagen", genre: "Folk-Pop / Alternative", note: "The Weight of the Woods Tour", status: "onsale" },
+    { date: "2026-11-05", venue: "Bill Graham Civic Auditorium", artist: "Moby, Azzecca, DJ Holographic", genre: "Electronic", note: "", status: "presale" },
+    { date: "2026-11-11", venue: "Bill Graham Civic Auditorium", artist: "Brand New", genre: "Alternative / Emo Rock", note: "7 Years + 13 Tour", status: "onsale" },
+    { date: "2026-11-13", venue: "Bill Graham Civic Auditorium", artist: "Tyla", genre: "Afropop / Amapiano", note: "The A*Pop World Tour", status: "onsale" },
+    { date: "2026-11-14", venue: "Bill Graham Civic Auditorium", artist: "Worship, Sub Focus, Dimension, Culture Shock 1991", genre: "Drum & Bass / Electronic", note: "North America 2026", status: "onsale" },
+    { date: "2026-11-24", venue: "Bill Graham Civic Auditorium", artist: "Steve Lacy", genre: "R&B / Alternative", note: "Oh Yeah? Tour", status: "soldout" },
+
+    { date: "2026-09-10", venue: "1015 Folsom", artist: "THROTTLE: D.Dan", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-09-11", venue: "1015 Folsom", artist: "Pendulum (DJ Set) + Andromedik", genre: "Drum & Bass / Electronic", note: "", status: "onsale" },
+    { date: "2026-09-18", venue: "1015 Folsom", artist: "Mild Minds", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-09-24", venue: "1015 Folsom", artist: "TUFF SF", genre: "Electronic / Dance", note: "Folsom Kick Off Party", status: "onsale" },
+    { date: "2026-09-25", venue: "1015 Folsom", artist: "2manyDJs", genre: "Electronic / Dance", note: "Portola Party", status: "onsale" },
+    { date: "2026-10-02", venue: "1015 Folsom", artist: "DJ Smokey + ilykimchi", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-10-09", venue: "1015 Folsom", artist: "Riordan", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-10-16", venue: "1015 Folsom", artist: "NOMADZ", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-10-22", venue: "1015 Folsom", artist: "X Club", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-10-23", venue: "1015 Folsom", artist: "CID x Maesic", genre: "Techno / House", note: "", status: "onsale" },
+    { date: "2026-10-29", venue: "1015 Folsom", artist: "DJ ROSSI", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-11-06", venue: "1015 Folsom", artist: "Main Phase", genre: "Bass / Electronic", note: "", status: "onsale" },
+
+    { date: "2026-09-09", venue: "The Warfield", artist: "Blood Orange", genre: "Alternative R&B", note: "Essex Honey Tour", status: "onsale" },
+    { date: "2026-09-10", venue: "The Warfield", artist: "Blood Orange", genre: "Alternative R&B", note: "Essex Honey Tour", status: "onsale" },
+    { date: "2026-09-11", venue: "The Warfield", artist: "Blood Orange", genre: "Alternative R&B", note: "Essex Honey Tour", status: "onsale" },
+    { date: "2026-09-12", venue: "The Warfield", artist: "San Holo with Saka", genre: "Electronic / Future Bass", note: "", status: "onsale" },
+    { date: "2026-09-15", venue: "The Warfield", artist: "Squeeze with Adam Ant & Haircut 100", genre: "New Wave / Rock", note: "", status: "onsale" },
+    { date: "2026-09-19", venue: "The Warfield", artist: "Arlo Parks with Baird", genre: "Indie / Neo-Soul", note: "Desire Tour", status: "onsale" },
+    { date: "2026-09-21", venue: "The Warfield", artist: "Peter Hook & The Light", genre: "Post-Punk / New Wave", note: "North American 2026 Tour", status: "onsale" },
+    { date: "2026-09-22", venue: "The Warfield", artist: "The Front Bottoms with Foxy Shazam, GDP", genre: "Folk Punk / Indie", note: "", status: "onsale" },
+    { date: "2026-09-24", venue: "The Warfield", artist: "Paris Paloma with Susannah Joffe", genre: "Folk / Alternative", note: "The Fatal Flaw Tour", status: "onsale" },
+    { date: "2026-09-26", venue: "The Warfield", artist: "SUGAR with J. Robbins", genre: "Alternative Rock", note: "", status: "onsale" },
+    { date: "2026-09-27", venue: "The Warfield", artist: "LUCKI with Sk8star", genre: "Hip-Hop / Cloud Rap", note: "", status: "onsale" },
+    { date: "2026-09-28", venue: "The Warfield", artist: "LUCKI with Sk8star", genre: "Hip-Hop / Cloud Rap", note: "", status: "onsale" },
+    { date: "2026-09-29", venue: "The Warfield", artist: "KALW's 85th Birthday Benefit", genre: "Variety / Benefit", note: "", status: "onsale" },
+    { date: "2026-09-30", venue: "The Warfield", artist: "JPEGMAFIA with redveil, matt proxy", genre: "Hip-Hop / Experimental", note: "", status: "onsale" },
+    { date: "2026-10-06", venue: "The Warfield", artist: "Hokus Pokus Live!", genre: "Comedy / Drag Theater", note: "", status: "onsale" },
+    { date: "2026-10-07", venue: "The Warfield", artist: "The Dresden Dolls", genre: "Punk Cabaret", note: "", status: "onsale" },
+    { date: "2026-10-08", venue: "The Warfield", artist: "JO1", genre: "J-Pop", note: "", status: "onsale" },
+    { date: "2026-10-10", venue: "The Warfield", artist: "Palace with Rollo Doherty", genre: "Indie Rock", note: "", status: "onsale" },
+
+    { date: "2026-09-11", venue: "August Hall", artist: "Asal", genre: "TBD", note: "Kiss the Sun Tour", status: "onsale" },
+    { date: "2026-09-12", venue: "August Hall", artist: "COLORS Presents: R&B ONLY", genre: "R&B", note: "", status: "onsale" },
+    { date: "2026-09-18", venue: "August Hall", artist: "The Exploited", genre: "Punk", note: "", status: "onsale" },
+    { date: "2026-09-19", venue: "August Hall", artist: "Earlybirds Club", genre: "Electronic / Club Night", note: "", status: "onsale" },
+    { date: "2026-09-22", venue: "August Hall", artist: "Bilal", genre: "R&B / Neo-Soul", note: "", status: "onsale" },
+    { date: "2026-09-25", venue: "August Hall", artist: "Everything Everything", genre: "Art Rock / Alternative", note: "Get to Heaven 10th Anniversary", status: "onsale" },
+    { date: "2026-09-29", venue: "August Hall", artist: "Ethan Regan", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-09-30", venue: "August Hall", artist: "Show Me the Body", genre: "Hardcore / Noise Rock", note: "", status: "onsale" },
+    { date: "2026-10-01", venue: "August Hall", artist: "Don West", genre: "Soul", note: "", status: "onsale" },
+    { date: "2026-10-02", venue: "August Hall", artist: "HEY, NOTHING", genre: "Indie Rock", note: "The Hound Tour", status: "onsale" },
+    { date: "2026-10-05", venue: "August Hall", artist: "Nick Hakim", genre: "R&B / Experimental Soul", note: "", status: "onsale" },
+    { date: "2026-10-07", venue: "August Hall", artist: "French Police", genre: "Indie / Post-Punk", note: "", status: "onsale" },
+    { date: "2026-10-08", venue: "August Hall", artist: "The Rasmus", genre: "Alternative Rock", note: "", status: "onsale" },
+    { date: "2026-10-10", venue: "August Hall", artist: "Punchis! Punchis!", genre: "Bass / Electronic", note: "", status: "onsale" },
+    { date: "2026-10-12", venue: "August Hall", artist: "Love Spells", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-15", venue: "August Hall", artist: "SiM", genre: "Metalcore / Ska Punk", note: "Hooman World Tour", status: "onsale" },
+    { date: "2026-10-16", venue: "August Hall", artist: "Actress", genre: "Electronic / Experimental", note: "", status: "onsale" },
+    { date: "2026-10-17", venue: "August Hall", artist: "Akeem Ali", genre: "R&B / Neo-Soul", note: "The Texture Tour", status: "onsale" },
+
+    { date: "2026-09-27", venue: "The Independent SF", artist: "Hot Chip DJ Set", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-10-07", venue: "The Independent SF", artist: "Deer Tick with Presley Haile", genre: "Alt-Country / Rock", note: "", status: "onsale" },
+    { date: "2026-10-22", venue: "The Independent SF", artist: "Frankie Cosmos", genre: "Indie Pop", note: "Celebrating 10 Years of Next Thing", status: "onsale" },
+    { date: "2026-10-24", venue: "The Independent SF", artist: "Everclear + American Hi-Fi", genre: "Alternative Rock", note: "Lucky 7 Tour", status: "onsale" },
+    { date: "2026-11-18", venue: "The Independent SF", artist: "Icona Pop", genre: "Electropop / Dance-Pop", note: "", status: "onsale" },
+
+    { date: "2026-09-12", venue: "The Fillmore", artist: "Public Image Ltd", genre: "Post-Punk", note: "This Is Not The Last Tour", status: "onsale" },
+    { date: "2026-09-13", venue: "The Fillmore", artist: "Manchester Orchestra", genre: "Rock", note: "20th Anniversary", status: "onsale" },
+    { date: "2026-09-19", venue: "The Fillmore", artist: "The Matches", genre: "Rock", note: "Decomposer 20 Years Later", status: "onsale" },
+    { date: "2026-09-21", venue: "The Fillmore", artist: "Waylon Wyatt", genre: "Country", note: "Dustpiles World Tour", status: "onsale" },
+    { date: "2026-09-22", venue: "The Fillmore", artist: "Dogstar", genre: "Rock", note: "All In Now Tour", status: "onsale" },
+    { date: "2026-09-25", venue: "The Fillmore", artist: "Sleep", genre: "Metal", note: "North America 2026 (night 1 of 2)", status: "onsale" },
+    { date: "2026-09-26", venue: "The Fillmore", artist: "Sleep", genre: "Metal", note: "North America 2026 (night 2 of 2)", status: "onsale" },
+    { date: "2026-09-27", venue: "The Fillmore", artist: "Eslabon Armado", genre: "Latin", note: "Amor Nocturno", status: "onsale" },
+    { date: "2026-10-02", venue: "The Fillmore", artist: "Gillian Welch & David Rawlings", genre: "Folk / Americana", note: "", status: "onsale" },
+    { date: "2026-10-03", venue: "The Fillmore", artist: "My Morning Jacket", genre: "Rock", note: "7-show residency, Oct 3–11", status: "onsale" },
+    { date: "2026-10-16", venue: "The Fillmore", artist: "Neurosis", genre: "Metal", note: "night 1 of 2", status: "onsale" },
+    { date: "2026-10-17", venue: "The Fillmore", artist: "Neurosis", genre: "Metal", note: "night 2 of 2", status: "onsale" },
+    { date: "2026-10-18", venue: "The Fillmore", artist: "The Wallflowers", genre: "Rock", note: "", status: "onsale" },
+    { date: "2026-10-23", venue: "The Fillmore", artist: "Pouya", genre: "Hip-Hop", note: "The Forever Glades Tour 2026", status: "onsale" },
+    { date: "2026-10-24", venue: "The Fillmore", artist: "Amble", genre: "Folk", note: "", status: "onsale" },
+    { date: "2026-10-25", venue: "The Fillmore", artist: "Kishi Bashi", genre: "Indie / Orchestral Pop", note: "Sonderlust 10th Anniversary Tour", status: "onsale" },
+    { date: "2026-10-27", venue: "The Fillmore", artist: "Slow Pulp", genre: "Indie Rock", note: "night 1 of 2", status: "onsale" },
+    { date: "2026-10-28", venue: "The Fillmore", artist: "Slow Pulp", genre: "Indie Rock", note: "night 2 of 2", status: "onsale" },
+    { date: "2026-10-29", venue: "The Fillmore", artist: "Dilated Peoples", genre: "Hip-Hop", note: "", status: "onsale" },
+    { date: "2026-10-30", venue: "The Fillmore", artist: "Galactic", genre: "Funk / Jam", note: "night 1 of 2", status: "onsale" },
+    { date: "2026-10-31", venue: "The Fillmore", artist: "Galactic", genre: "Funk / Jam", note: "night 2 of 2", status: "onsale" },
+    { date: "2026-11-01", venue: "The Fillmore", artist: "Jose Madero", genre: "Latin", note: "USA Tour 2026", status: "onsale" },
+    { date: "2026-11-06", venue: "The Fillmore", artist: "Thee Sinseers", genre: "R&B", note: "Love Stories Tour", status: "onsale" },
+    { date: "2026-11-07", venue: "The Fillmore", artist: "Big Star Quintet", genre: "Rock / Jangle Pop", note: "", status: "onsale" },
+    { date: "2026-11-09", venue: "The Fillmore", artist: "Quadeca", genre: "Hip-Hop", note: "", status: "onsale" },
+    { date: "2026-11-11", venue: "The Fillmore", artist: "The Damned", genre: "Punk", note: "Final Damnation 50", status: "onsale" },
+    { date: "2026-11-12", venue: "The Fillmore", artist: "Gene", genre: "Rock", note: "", status: "onsale" },
+    { date: "2026-11-13", venue: "The Fillmore", artist: "Ceremony", genre: "Hardcore / Metal", note: "", status: "onsale" },
+    { date: "2026-11-14", venue: "The Fillmore", artist: "Allison Russell", genre: "Folk / Americana", note: "", status: "onsale" },
+    { date: "2026-11-15", venue: "The Fillmore", artist: "The Mountain Goats", genre: "Indie Folk", note: "6-show residency, Nov 15–21", status: "onsale" },
+
+    { date: "2026-09-11", venue: "The Midway SF", artist: "PAUZ Presents", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-09-11", venue: "The Midway SF", artist: "Flux Pavilion", genre: "Dubstep / Bass", note: "", status: "onsale" },
+    { date: "2026-09-12", venue: "The Midway SF", artist: "Whales", genre: "Trap / Bass", note: "", status: "onsale" },
+    { date: "2026-09-12", venue: "The Midway SF", artist: "DJ O Fresh", genre: "Drum & Bass", note: "", status: "onsale" },
+    { date: "2026-09-18", venue: "The Midway SF", artist: "K Motionz", genre: "Drum & Bass", note: "", status: "onsale" },
+    { date: "2026-09-19", venue: "The Midway SF", artist: "Estiva", genre: "Trance", note: "", status: "onsale" },
+    { date: "2026-09-19", venue: "The Midway SF", artist: "Satin Jackets", genre: "Nu-Disco / Chillwave", note: "", status: "onsale" },
+    { date: "2026-09-19", venue: "The Midway SF", artist: "Juelz", genre: "Hip-Hop", note: "", status: "onsale" },
+    { date: "2026-09-27", venue: "The Midway SF", artist: "horsegiirL", genre: "Techno", note: "", status: "onsale" },
+    { date: "2026-10-03", venue: "The Midway SF", artist: "Elephante", genre: "Progressive House / EDM", note: "", status: "onsale" },
+    { date: "2026-10-03", venue: "The Midway SF", artist: "DJ_Dave", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-10-09", venue: "The Midway SF", artist: "WHIPPED CREAM", genre: "Bass / Dubstep", note: "", status: "onsale" },
+    { date: "2026-10-09", venue: "The Midway SF", artist: "Audien", genre: "Progressive House / EDM", note: "", status: "onsale" },
+    { date: "2026-10-09", venue: "The Midway SF", artist: "TELYKAST", genre: "Dubstep / Bass", note: "", status: "onsale" },
+    { date: "2026-10-10", venue: "The Midway SF", artist: "Tinlicker", genre: "Melodic Techno / Trance", note: "", status: "onsale" },
+    { date: "2026-10-10", venue: "The Midway SF", artist: "Polo & Pan", genre: "Nu-Disco / French Touch", note: "", status: "onsale" },
+    { date: "2026-10-11", venue: "The Midway SF", artist: "Miguel Migs", genre: "Deep House", note: "", status: "onsale" },
+    { date: "2026-10-17", venue: "The Midway SF", artist: "Yheti", genre: "Bass / Dubstep", note: "", status: "onsale" },
+    { date: "2026-10-23", venue: "The Midway SF", artist: "Chief Keef", genre: "Hip-Hop", note: "", status: "onsale" },
+    { date: "2026-10-24", venue: "The Midway SF", artist: "Tokyo Machine", genre: "Bass / Dubstep", note: "", status: "onsale" },
+    { date: "2026-10-24", venue: "The Midway SF", artist: "Marc Rebillet", genre: "Experimental / Live Looping", note: "", status: "onsale" },
+    { date: "2026-10-30", venue: "The Midway SF", artist: "Marshmello", genre: "Electronic / EDM", note: "", status: "onsale" },
+    { date: "2026-10-31", venue: "The Midway SF", artist: "RL Grime", genre: "Trap / Bass", note: "", status: "onsale" },
+    { date: "2026-11-06", venue: "The Midway SF", artist: "HVDES", genre: "Dark Techno / Electronic", note: "", status: "onsale" },
+    { date: "2026-11-07", venue: "The Midway SF", artist: "Kayzo", genre: "Hardcore / Dubstep", note: "", status: "onsale" },
+    { date: "2026-11-13", venue: "The Midway SF", artist: "Valentino Khan", genre: "Trap / Bass", note: "", status: "onsale" },
+    { date: "2026-11-13", venue: "The Midway SF", artist: "Valentina Soto", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-11-14", venue: "The Midway SF", artist: "Neumonic", genre: "Bass / Electronic", note: "", status: "onsale" },
+    { date: "2026-11-20", venue: "The Midway SF", artist: "James HYPE", genre: "Tech House", note: "", status: "onsale" },
+    { date: "2026-11-20", venue: "The Midway SF", artist: "Hans Glader", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-11-21", venue: "The Midway SF", artist: "WUKI", genre: "Trap / Bass", note: "", status: "onsale" },
+
+    { date: "2026-09-15", venue: "The Regency Ballroom", artist: "Epic Rap Battles of History", genre: "Comedy / Hip-Hop", note: "", status: "onsale" },
+    { date: "2026-09-19", venue: "The Regency Ballroom", artist: "Dynalectric Orchestra", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-09-25", venue: "The Regency Ballroom", artist: "Channel Tres", genre: "Electronic / Hip-House", note: "", status: "onsale" },
+    { date: "2026-09-26", venue: "The Regency Ballroom", artist: "Parcels", genre: "Indie / Disco-Pop", note: "", status: "onsale" },
+    { date: "2026-09-27", venue: "The Regency Ballroom", artist: "Bravo The Bagchaser", genre: "Hip-Hop / Rap", note: "", status: "onsale" },
+    { date: "2026-09-29", venue: "The Regency Ballroom", artist: "CupcakKe", genre: "Hip-Hop / Rap", note: "", status: "onsale" },
+    { date: "2026-09-30", venue: "The Regency Ballroom", artist: "Chat Pile", genre: "Noise Rock / Sludge Metal", note: "", status: "onsale" },
+    { date: "2026-10-01", venue: "The Regency Ballroom", artist: "POiSON GiRL FRiEND", genre: "Dream Pop / Ambient", note: "", status: "onsale" },
+    { date: "2026-10-02", venue: "The Regency Ballroom", artist: "Hamdi", genre: "UK Bass / Grime", note: "", status: "onsale" },
+    { date: "2026-10-03", venue: "The Regency Ballroom", artist: "Hamdi", genre: "UK Bass / Grime", note: "", status: "onsale" },
+    { date: "2026-10-09", venue: "The Regency Ballroom", artist: "Dead Kennedys", genre: "Punk", note: "", status: "onsale" },
+    { date: "2026-10-13", venue: "The Regency Ballroom", artist: "MICO", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-15", venue: "The Regency Ballroom", artist: "The Blasting Company", genre: "Balkan / Gypsy Folk", note: "", status: "onsale" },
+    { date: "2026-10-16", venue: "The Regency Ballroom", artist: "moe.", genre: "Jam Band / Rock", note: "", status: "onsale" },
+    { date: "2026-10-17", venue: "The Regency Ballroom", artist: "NOTD", genre: "Electronic / Pop", note: "", status: "onsale" },
+    { date: "2026-10-18", venue: "The Regency Ballroom", artist: "She Wants Revenge", genre: "Post-Punk / Synth-Rock", note: "", status: "onsale" },
+    { date: "2026-10-22", venue: "The Regency Ballroom", artist: "The Aquabats!", genre: "Ska Punk / Comedy Rock", note: "", status: "onsale" },
+    { date: "2026-10-24", venue: "The Regency Ballroom", artist: "Jai Wolf", genre: "Electronic / Indie Dance", note: "", status: "onsale" },
+    { date: "2026-10-28", venue: "The Regency Ballroom", artist: "Barrington Levy", genre: "Reggae / Dancehall", note: "", status: "onsale" },
+    { date: "2026-10-29", venue: "The Regency Ballroom", artist: "Bleood", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-31", venue: "The Regency Ballroom", artist: "Medium Build", genre: "Indie / Alternative", note: "", status: "onsale" },
+    { date: "2026-11-01", venue: "The Regency Ballroom", artist: "The Musical Box", genre: "Progressive Rock (Genesis Tribute)", note: "", status: "onsale" },
+    { date: "2026-11-05", venue: "The Regency Ballroom", artist: "The Black Angels", genre: "Psychedelic Rock", note: "", status: "onsale" },
+    { date: "2026-11-06", venue: "The Regency Ballroom", artist: "Lucy Bedroque", genre: "Underground Hip-Hop", note: "Nov 6–7", status: "onsale" },
+    { date: "2026-11-08", venue: "The Regency Ballroom", artist: "Nia Archives", genre: "Jungle / Drum & Bass", note: "", status: "onsale" },
+    { date: "2026-11-10", venue: "The Regency Ballroom", artist: "Yuki Chiba", genre: "Hip-Hop", note: "", status: "onsale" },
+    { date: "2026-11-11", venue: "The Regency Ballroom", artist: "Soft Cell", genre: "Synth-Pop / New Wave", note: "", status: "onsale" },
+    { date: "2026-11-12", venue: "The Regency Ballroom", artist: "Band of Horses", genre: "Indie Rock", note: "", status: "onsale" },
+    { date: "2026-11-13", venue: "The Regency Ballroom", artist: "L7", genre: "Punk / Grunge", note: "", status: "onsale" },
+    { date: "2026-11-14", venue: "The Regency Ballroom", artist: "Headache", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-11-16", venue: "The Regency Ballroom", artist: "Manic Street Preachers", genre: "Alternative Rock", note: "", status: "onsale" },
+    { date: "2026-11-20", venue: "The Regency Ballroom", artist: "Layton Giordani", genre: "Techno", note: "", status: "onsale" },
+    { date: "2026-11-23", venue: "The Regency Ballroom", artist: "Gary Numan", genre: "Synth-Pop / New Wave", note: "", status: "onsale" },
+    { date: "2026-11-24", venue: "The Regency Ballroom", artist: "Blessthefall, The Amity Affliction", genre: "Metalcore", note: "", status: "onsale" },
+    { date: "2026-11-25", venue: "The Regency Ballroom", artist: "The Wrecks", genre: "Alternative / Indie Rock", note: "", status: "onsale" },
+
+    { date: "2026-09-09", venue: "The Independent SF", artist: "Kevin Atwater", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-09-10", venue: "The Independent SF", artist: "Rules", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-09-11", venue: "The Independent SF", artist: "Arlo", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-09-12", venue: "The Independent SF", artist: "BL3SS", genre: "Electronic / Bass", note: "", status: "onsale" },
+    { date: "2026-09-13", venue: "The Independent SF", artist: "Towa Bird", genre: "Alternative Rock", note: "", status: "onsale" },
+    { date: "2026-09-15", venue: "The Independent SF", artist: "The Tear Garden", genre: "Industrial / Experimental", note: "", status: "onsale" },
+    { date: "2026-09-17", venue: "The Independent SF", artist: "Mustard Service", genre: "Indie Rock", note: "", status: "onsale" },
+    { date: "2026-09-18", venue: "The Independent SF", artist: "Daniel Avery", genre: "Techno / Electronic", note: "", status: "onsale" },
+    { date: "2026-09-19", venue: "The Independent SF", artist: "Cut Chemist", genre: "Hip-Hop / Turntablism", note: "", status: "onsale" },
+    { date: "2026-09-21", venue: "The Independent SF", artist: "Sondre Lerche", genre: "Indie Pop / Singer-Songwriter", note: "", status: "onsale" },
+    { date: "2026-09-22", venue: "The Independent SF", artist: "Dana and Alden", genre: "Pop / Indie Pop", note: "", status: "onsale" },
+    { date: "2026-09-23", venue: "The Independent SF", artist: "Ghostly Kisses", genre: "Dream Pop / Indie", note: "", status: "onsale" },
+    { date: "2026-09-24", venue: "The Independent SF", artist: "WesGhost & Red Leather", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-09-25", venue: "The Independent SF", artist: "In Color", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-09-26", venue: "The Independent SF", artist: "West 22nd", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-09-29", venue: "The Independent SF", artist: "Way Dynamic", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-09-30", venue: "The Independent SF", artist: "Chasing Abbey", genre: "Electronic / Dance", note: "", status: "onsale" },
+    { date: "2026-10-01", venue: "The Independent SF", artist: "Mari Froes", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-02", venue: "The Independent SF", artist: "Bella Kay", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-03", venue: "The Independent SF", artist: "Röya", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-04", venue: "The Independent SF", artist: "Rusowsky", genre: "Alt R&B / Electronic", note: "", status: "onsale" },
+    { date: "2026-10-06", venue: "The Independent SF", artist: "Cure for Paranoia", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-08", venue: "The Independent SF", artist: "The Breaks", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-09", venue: "The Independent SF", artist: "Devon Gilfillian", genre: "Soul / R&B", note: "", status: "onsale" },
+    { date: "2026-10-10", venue: "The Independent SF", artist: "dublon", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-11", venue: "The Independent SF", artist: "Santiago Cruz", genre: "Latin Pop / Rock", note: "", status: "onsale" },
+    { date: "2026-10-12", venue: "The Independent SF", artist: "KiNG MALA", genre: "Alt Pop / Electropop", note: "", status: "onsale" },
+    { date: "2026-10-13", venue: "The Independent SF", artist: "Automatic", genre: "Post-Punk / Synth", note: "", status: "onsale" },
+    { date: "2026-10-14", venue: "The Independent SF", artist: "Juice", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-15", venue: "The Independent SF", artist: "Lost Kings", genre: "Electronic / Pop", note: "", status: "onsale" },
+    { date: "2026-10-16", venue: "The Independent SF", artist: "This Is Lorelei", genre: "Indie Rock / Lo-Fi", note: "", status: "onsale" },
+    { date: "2026-10-17", venue: "The Independent SF", artist: "Asha Banks", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-18", venue: "The Independent SF", artist: "Raaginder", genre: "Indie / Alternative", note: "", status: "onsale" },
+    { date: "2026-10-19", venue: "The Independent SF", artist: "New Constellations", genre: "Alternative Rock", note: "", status: "onsale" },
+    { date: "2026-10-20", venue: "The Independent SF", artist: "Sawyer Hill", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-21", venue: "The Independent SF", artist: "City of the Sun", genre: "Instrumental / Flamenco Fusion", note: "", status: "onsale" },
+    { date: "2026-10-23", venue: "The Independent SF", artist: "Frog", genre: "Indie Rock", note: "", status: "onsale" },
+    { date: "2026-10-25", venue: "The Independent SF", artist: "BALTHVS", genre: "Psychedelic Rock / Funk", note: "", status: "onsale" },
+    { date: "2026-10-27", venue: "The Independent SF", artist: "Landon Conrath", genre: "Indie Pop / Alternative", note: "", status: "onsale" },
+    { date: "2026-10-27", venue: "The Independent SF", artist: "The Wldlfe", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-28", venue: "The Independent SF", artist: "Freak Slug", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-10-29", venue: "The Independent SF", artist: "Patrick Wolf", genre: "Art Pop / Baroque Pop", note: "", status: "onsale" },
+    { date: "2026-10-30", venue: "The Independent SF", artist: "High Step Society", genre: "Ska / Reggae", note: "", status: "onsale" },
+    { date: "2026-11-01", venue: "The Independent SF", artist: "Six60", genre: "Reggae Rock / Pop", note: "", status: "onsale" },
+    { date: "2026-11-03", venue: "The Independent SF", artist: "Gilla Band", genre: "Noise Rock / Post-Punk", note: "", status: "onsale" },
+    { date: "2026-11-04", venue: "The Independent SF", artist: "INOHA", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-11-05", venue: "The Independent SF", artist: "Greg Freeman", genre: "Indie Rock / Folk", note: "", status: "onsale" },
+    { date: "2026-11-06", venue: "The Independent SF", artist: "King Buffalo", genre: "Stoner / Psychedelic Rock", note: "", status: "onsale" },
+    { date: "2026-11-07", venue: "The Independent SF", artist: "Karina Rykman", genre: "Funk / Jam", note: "", status: "onsale" },
+    { date: "2026-11-08", venue: "The Independent SF", artist: "THAO", genre: "Indie Rock / Folk", note: "", status: "onsale" },
+    { date: "2026-11-10", venue: "The Independent SF", artist: "Weston Estate", genre: "R&B / Hip-Hop", note: "", status: "onsale" },
+    { date: "2026-11-11", venue: "The Independent SF", artist: "Stop Light Observations", genre: "Alternative Rock / Soul", note: "", status: "onsale" },
+    { date: "2026-11-12", venue: "The Independent SF", artist: "Stephen Day", genre: "Indie Pop / Folk", note: "", status: "onsale" },
+    { date: "2026-11-13", venue: "The Independent SF", artist: "Whitmer Thomas", genre: "Comedy / Music", note: "", status: "onsale" },
+    { date: "2026-11-14", venue: "The Independent SF", artist: "Sean Hayes", genre: "Folk / Singer-Songwriter", note: "", status: "onsale" },
+    { date: "2026-11-15", venue: "The Independent SF", artist: "Strongboi", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-11-17", venue: "The Independent SF", artist: "Silverada", genre: "Country / Alt-Country", note: "", status: "onsale" },
+    { date: "2026-11-19", venue: "The Independent SF", artist: "Pretty Sick", genre: "Alt Rock / Grunge", note: "", status: "onsale" },
+    { date: "2026-11-20", venue: "The Independent SF", artist: "Dan Whitlam", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-11-21", venue: "The Independent SF", artist: "Q Marsden", genre: "TBD", note: "", status: "onsale" },
+    { date: "2026-11-22", venue: "The Independent SF", artist: "mark william lewis", genre: "TBD", note: "", status: "onsale" }
+  ];
+
+  const listEl = document.getElementById("listings");
+  const emptyEl = document.getElementById("emptyState");
+  const dow = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const mon = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  function groupKey(dateStr) {
+    const d = new Date(dateStr + "T00:00:00");
+    return mon[d.getMonth()] + " " + d.getFullYear();
+  }
+
+  function statusLabel(s) {
+    return s === "onsale" ? "On Sale" : s === "soldout" ? "Sold Out" : "Presale";
+  }
+
+  function render() {
+    listEl.innerHTML = "";
+    const groups = new Map();
+    for (const s of shows) {
+      const key = groupKey(s.date);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(s);
+    }
+
+    let cardIndex = 0;
+
+    for (const [label, items] of groups) {
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "month-group";
+      const heading = document.createElement("div");
+      heading.className = "month-label";
+      heading.textContent = label;
+      groupDiv.appendChild(heading);
+
+      const grid = document.createElement("div");
+      grid.className = "show-grid";
+
+      for (const s of items) {
+        const d = new Date(s.date + "T00:00:00");
+        const card = document.createElement("article");
+        card.className = "show-card";
+        card.style.setProperty("--i", cardIndex++);
+        card.dataset.venue = s.venue;
+        card.dataset.genre = s.genre;
+        card.tabIndex = 0;
+
+        card.innerHTML = `
+          <div class="stub">
+            <span class="stub-dow">${dow[d.getDay()]}</span>
+            <span class="stub-day">${d.getDate()}</span>
+            <span class="stub-mon">${mon[d.getMonth()]}</span>
+          </div>
+          <div class="card-body">
+            <p class="artist">${s.artist}</p>
+            <div class="card-tags">
+              <span class="genre-tag">${s.genre}</span>
+              <span class="status ${s.status}">${statusLabel(s.status)}</span>
+            </div>
+            <span class="venue-name">${s.venue}</span>
+            ${s.note ? `<span class="note">${s.note}</span>` : ""}
+          </div>
+        `;
+        grid.appendChild(card);
+      }
+      groupDiv.appendChild(grid);
+      listEl.appendChild(groupDiv);
+    }
+    applyFilters();
+  }
+
+  let activeVenue = "all";
+
+  function applyFilters() {
+    let visibleCount = 0;
+    document.querySelectorAll(".show-card").forEach(card => {
+      const visible = activeVenue === "all" || card.dataset.venue === activeVenue;
+      card.hidden = !visible;
+      if (visible) visibleCount++;
+    });
+    document.querySelectorAll(".month-group").forEach(group => {
+      const anyCard = group.querySelectorAll(".show-card:not([hidden])").length > 0;
+      group.style.display = anyCard ? "" : "none";
+    });
+    emptyEl.style.display = visibleCount === 0 ? "block" : "none";
+  }
+
+  document.querySelectorAll(".venue-pill").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".venue-pill").forEach(b => b.setAttribute("aria-pressed", "false"));
+      btn.setAttribute("aria-pressed", "true");
+      activeVenue = btn.dataset.venue;
+      applyFilters();
+    });
+  });
+
+  render();
+</script>
+</body>
+</html>
