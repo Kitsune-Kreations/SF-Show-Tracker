@@ -1,0 +1,28 @@
+name: Weekly Tracker Update
+on:
+  schedule:
+    # 15:00 UTC = 7am PT (8am during PST) every Monday
+    - cron: "0 15 * * 1"
+  workflow_dispatch: {}
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: >
+            Follow the instructions in CLAUDE.md exactly to refresh this repo's index.html
+            with this week's show data, then commit and push the result to main as described
+            in CLAUDE.md's "Committing" section. Today's date should be used as the run date
+            for computing the show window.
+          claude_args: |
+            --model claude-sonnet-5
+            --max-turns 60
+            --allowedTools "Bash,Read,Write,Edit,WebFetch,WebSearch"
