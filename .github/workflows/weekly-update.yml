@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 1
       - uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: >
             Follow the instructions in CLAUDE.md exactly to refresh this repo's index.html
             with this week's show data, then commit and push the result to main as described
