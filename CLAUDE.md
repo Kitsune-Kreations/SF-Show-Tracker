@@ -4,6 +4,16 @@ This repo publishes a single page, `index.html`, via GitHub Pages. It's a live l
 SF venue shows (Venue / Artist / Genre / Date), styled as a "ticket stub" card grid. A GitHub Action
 runs this file's instructions on a weekly schedule to refresh the data. Follow this process exactly.
 
+## Critical: this runs non-interactively — do everything yourself, in this one turn
+
+This process runs inside a single GitHub Actions job with no human present and no ability to be woken up
+later. **Do not use the Task/Agent tool, and do not spawn background subagents to parallelize fetching the
+8 venues.** A background agent's results only ever reach you if you're still running when it finishes and
+you get notified — but the moment your final message is sent, the job's container is torn down immediately,
+whether or not you actually finished the work. Spawning agents and then saying "I'll wait for them" ends
+the run with nothing done and no error raised. Fetch each venue directly and sequentially yourself with
+WebFetch, in the same turn, and finish by actually running the git commands below before your final message.
+
 ## Venues watched (8)
 
 1. **Bill Graham Civic Auditorium** — https://billgrahamcivic.com/event-listing/ — scrapes cleanly (static HTML).
@@ -42,6 +52,12 @@ venues above marked "source from Bandsintown." Two known issues:
   a pull shows two acts on the same date at the same venue, or anything else that looks off, verify against
   the venue's own site or Songkick/Ticketmaster for that specific date before including it — don't take a
   same-date double-booking at face value.
+- **Cloudflare blocks from this environment**: when this runs inside GitHub Actions specifically, Bandsintown
+  can return a Cloudflare "Sorry, you have been blocked" interstitial instead of the real page (GitHub's
+  server IPs sometimes have a worse bot-detection reputation than other fetchers). If that happens: retry
+  the fetch once, and if still blocked, fall back to the venue's own site or an AXS/Ticketmaster/Songkick
+  search for that specific venue for this run rather than getting stuck — a venue with thinner data one week
+  beats the whole run silently failing. Note in the commit message if a venue's primary source was blocked.
 
 ## Window rule
 
@@ -68,12 +84,16 @@ new run.
 
 ## Committing
 
-After rewriting `index.html`, commit and push directly to `main`:
+After rewriting `index.html`, commit and push directly to `main` yourself, in this same turn — do not end
+your turn or your final message until this has actually run and you've confirmed it worked:
 
 ```
 git add index.html
 git commit -m "Weekly update: <today's date>"
 git push
+git log -1
 ```
 
-GitHub Pages will pick up the change automatically — no further action needed.
+Check the `git push` output for confirmation it reached `origin/main` (not an error), and check `git log -1`
+shows your new commit. Only after confirming that should you send your final summary message. GitHub Pages
+will pick up the change automatically once pushed — no further action needed beyond the push itself.
