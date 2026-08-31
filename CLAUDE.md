@@ -77,7 +77,8 @@ instead of guessing).
 `const shows = [...]` array — each entry has `date`, `venue`, `artist`, `genre`, `note`, `status`
 (`"onsale"` | `"soldout"` | `"presale"`) fields. Replace this array with the freshly scraped, filtered,
 deduped show list, sorted by date then venue. Do not change the surrounding HTML/CSS/JS structure, the
-venue-pill filter list, or the color palette — only the data.
+venue-pill filter list, the color palette, or the per-card "Contact" button (the `bookingAgentInfoUrl()`
+helper and the `.contact-link` element in each card) — only the data.
 
 Also update the header's meta chips (Updated date, Window range, Venue count, Show count) to reflect the
 new run.
